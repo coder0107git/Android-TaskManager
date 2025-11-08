@@ -53,7 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ github.ref != 'refs/heads/main' }}
-          tag_name: ${{ github.sha }}
+          tag_name: ${{ github.ref == 'refs/heads/main' && 'latest' || 'nightly' }}
           files: app/taskmanager-${{ env.COMMIT_HASH }}.apk
 
       - name: Delete xed.keystore and signing.properties
