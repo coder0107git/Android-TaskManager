@@ -7,12 +7,6 @@ on:
     paths-ignore:
       - '**/*.md'
   workflow_dispatch:
-    inputs:
-      release:
-        type: boolean
-        description: Create a release?
-        required: true
-        default: false
 
 jobs:
   build-release:
@@ -56,9 +50,10 @@ jobs:
           path: app/taskmanager-${{ env.COMMIT_HASH }}.apk
       
       - name: Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ github.ref == 'refs/heads/main' || inputs.release == true }}
+        uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          tag_name: ${{ github.sha }}
           files: app/taskmanager-${{ env.COMMIT_HASH }}.apk
 
       - name: Delete xed.keystore and signing.properties
