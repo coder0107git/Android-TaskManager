@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI & Release
 on:
   push:
     branches:
@@ -7,6 +7,12 @@ on:
     paths-ignore:
       - '**/*.md'
   workflow_dispatch:
+    inputs:
+      release:
+        type: boolean
+        description: Create a release?
+        required: true
+        default: false
 
 jobs:
   build-release:
@@ -48,6 +54,12 @@ jobs:
         with:
           name: TaskManager-Release
           path: app/taskmanager-${{ env.COMMIT_HASH }}.apk
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.ref == 'refs/heads/main' || inputs.release == true }}
+        with:
+          files: app/taskmanager-${{ env.COMMIT_HASH }}.apk
 
       - name: Delete xed.keystore and signing.properties
         run: rm /tmp/xed.keystore /tmp/signing.properties
