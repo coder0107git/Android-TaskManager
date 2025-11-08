@@ -43,10 +43,8 @@ import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.taskmanager.MainActivity
-import com.rk.taskmanager.ads.RewardedAds
 import com.rk.taskmanager.getString
 import com.rk.taskmanager.settings.Settings
-import com.rk.taskmanager.settings.Settings.shouldPreLoadThemeAd
 import com.rk.taskmanager.strings
 import com.rk.taskmanager.ui.theme.currentTheme
 import com.rk.taskmanager.ui.theme.dynamicTheme
@@ -62,13 +60,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier, navController: NavController) {
-    var showAdCallback by remember { mutableStateOf<(()->Unit)?>(null) }
-    var showAdDialog by remember { mutableStateOf(false) }
     val activity = LocalActivity.current as MainActivity
-
-    LaunchedEffect(Unit) {
-        RewardedAds.loadAd(activity!!)
-    }
 
     PreferenceLayout(
         modifier = modifier,
@@ -112,26 +104,9 @@ fun SettingsScreen(modifier: Modifier = Modifier, navController: NavController) 
                 description = null,
                 isEnaled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
                 onClick = {
-                    if (RewardedAds.isAdAvailable()){
-                        showAdCallback = {
-                            RewardedAds.showAd(activity = activity!!){
-                                showAdDialog = false
-                                Log.d("Settings","OK")
-                                MainActivity.instance?.lifecycleScope?.launch {
-                                    dynamicTheme.value = true
-                                    Settings.monet = true
-                                }
-                                Settings.shouldPreLoadThemeAd = false
-
-                            }
-                        }
-                        showAdDialog = true
-                    }else{
-                        MainActivity.instance?.lifecycleScope?.launch {
-                            dynamicTheme.value = true
-                            Settings.monet = true
-                        }
-                        RewardedAds.loadAd(activity!!)
+                    MainActivity.instance?.lifecycleScope?.launch {
+                        dynamicTheme.value = true
+                        Settings.monet = true
                     }
                 })
 
@@ -141,34 +116,13 @@ fun SettingsScreen(modifier: Modifier = Modifier, navController: NavController) 
                     label = stringResource(it.value.nameRes),
                     description = null,
                     onClick = {
-                        if (RewardedAds.isAdAvailable()){
-                            showAdCallback= {
-                                RewardedAds.showAd(activity = activity!!){
-                                    showAdDialog = false
-                                    Log.d("Settings","OK")
-                                    MainActivity.instance?.lifecycleScope?.launch {
-                                        currentTheme.intValue = it.key
-                                        Settings.theme = it.key
-                                        if (dynamicTheme.value) {
-                                            dynamicTheme.value = false
-                                            Settings.monet = false
-                                        }
-                                    }
-                                    Settings.shouldPreLoadThemeAd = false
-
-                                }
+                        MainActivity.instance?.lifecycleScope?.launch {
+                            currentTheme.intValue = it.key
+                            Settings.theme = it.key
+                            if (dynamicTheme.value) {
+                                dynamicTheme.value = false
+                                Settings.monet = false
                             }
-                            showAdDialog = true
-                        }else{
-                            MainActivity.instance?.lifecycleScope?.launch {
-                                currentTheme.intValue = it.key
-                                Settings.theme = it.key
-                                if (dynamicTheme.value) {
-                                    dynamicTheme.value = false
-                                    Settings.monet = false
-                                }
-                            }
-                            RewardedAds.loadAd(activity!!)
                         }
                     })
             }
@@ -201,35 +155,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, navController: NavController) 
                     }
                 )
             }
-        }
-
-        PreferenceGroup {
-            SettingsToggle(
-                label = stringResource(strings.privacy_policy),
-                description = stringResource(strings.privacy_desc),
-                isEnabled = true,
-                showSwitch = false,
-                default = false,
-                endWidget = {
-                    Icon(
-                        modifier = Modifier.padding(16.dp),
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null
-                    )
-                },
-                sideEffect = {
-                    val url = "https://raw.githubusercontent.com/RohitKushvaha01/TaskManager/refs/heads/main/privacy_policy.md"
-                    val intent = Intent(Intent.ACTION_VIEW).apply { data = url.toUri() }
-                    context.startActivity(intent)
-                }
-            )
-        }
-
-        if (showAdDialog){
-            RewardAdDialog(onDismiss = { showAdDialog = false }, onWatchAd = {
-                showAdDialog = false
-                showAdCallback?.invoke()
-            })
         }
 
     }
@@ -265,31 +190,6 @@ fun SelectableCard(
         endWidget = null,
         startWidget = {
             RadioButton(selected = selected, onClick = onClick, modifier = Modifier.padding(start = 8.dp))
-        }
-    )
-}
-
-
-@Composable
-fun RewardAdDialog(
-    onDismiss: () -> Unit,
-    onWatchAd: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(strings.ad)) },
-        text = {
-            Text(stringResource(strings.ad_desc))
-        },
-        confirmButton = {
-            TextButton(onClick = onWatchAd) {
-                Text(stringResource(strings.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(strings.cancel))
-            }
         }
     )
 }
