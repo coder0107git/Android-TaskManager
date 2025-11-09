@@ -51,7 +51,7 @@ jobs:
 
       - name: Get release version name
         id: version_name
-        run: echo "VERSION_NAME=$(./gradlew printVersionName)" >> $GITHUB_ENV
+        run: echo "VERSION_NAME=$(./gradlew -q :app:printVersionName)" >> $GITHUB_ENV
       
       - name: Release
         uses: softprops/action-gh-release@v2

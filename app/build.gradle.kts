@@ -99,9 +99,12 @@ android {
     }
 }
 
-task printVersionName {
+tasks.register("printVersionName") {
     doLast {
-        println(android.defaultConfig.versionName)
+        val android = project.extensions.getByName("android") as com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+        val versionName = android.defaultConfig.versionName
+        
+        println(versionName)
     }
 }
 
