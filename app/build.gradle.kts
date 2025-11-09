@@ -99,6 +99,12 @@ android {
     }
 }
 
+task printVersionName {
+    doLast {
+        println(android.defaultConfig.versionName)
+    }
+}
+
 tasks.whenTaskAdded {
     if (name.contains("ArtProfile") && isIzzyOrFdroid) {
         println("Skipped Task $name")
